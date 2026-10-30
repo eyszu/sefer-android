@@ -1,0 +1,22 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+
+    <!-- open book, shifted down and slightly smaller to make room for the star -->
+    <group android:scaleX="0.85" android:scaleY="0.85"
+        android:pivotX="54" android:pivotY="54"
+        android:translateY="9">
+        <path android:fillColor="#FFFBF5EA"
+            android:pathData="M54,38 C46,33 36,32 28,34 L28,74 C36,72 46,73 54,78 Z"/>
+        <path android:fillColor="#FFEBD9B8"
+            android:pathData="M54,38 C62,33 72,32 80,34 L80,74 C72,72 62,73 54,78 Z"/>
+        <path android:fillColor="#FF6B3F2A"
+            android:pathData="M52.5,40 L55.5,40 L55.5,76 L52.5,76 Z"/>
+    </group>
+
+    <!-- Star of David (two overlapping triangles) above the book -->
+    <path android:fillColor="#FFD9A441"
+        android:pathData="M54,21 L63.53,37.5 L44.47,37.5 Z"/>
+    <path android:fillColor="#FFD9A441"
+        android:pathData="M54,43 L63.53,26.5 L44.47,26.5 Z"/>
+</vector>
