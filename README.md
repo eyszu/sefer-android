@@ -1,4 +1,4 @@
-# Ang Biblia (Tagalog, 1905) – Android app
+# Ang Biblia (Tagalog, 1905) – Ang Biblia with Original Name of God in Android app
 
 Kotlin + Jetpack Compose (Material 3). minSdk 26, targetSdk 35.
 
