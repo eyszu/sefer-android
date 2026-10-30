@@ -2,6 +2,10 @@
 
 Kotlin + Jetpack Compose (Material 3). minSdk 26, targetSdk 35.
 
+## Installation
+1. Download the codes and copy the AngBiblia.apk to your phone.
+2. Install AngBiblia.apk in your android phone. (have to bypass the safe install from source)
+
 ## Build
 1. Open this folder in Android Studio (Ladybug 2024.2 or newer) and let it sync.
 2. Run on a device/emulator, or Build > Build APK(s).
