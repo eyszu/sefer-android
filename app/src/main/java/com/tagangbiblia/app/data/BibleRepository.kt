@@ -65,6 +65,17 @@ class BibleRepository(context: Context) {
         return out
     }
 
+    fun allVerses(): List<SearchHit> {
+        val out = ArrayList<SearchHit>(24000)
+        db.rawQuery(
+            "SELECT book_id, chapter, verse, text FROM TagAngBiblia_verses " +
+                "ORDER BY book_id, chapter, verse", null
+        ).use { c ->
+            while (c.moveToNext()) out += SearchHit(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3).trim())
+        }
+        return out
+    }
+
     fun verseText(bookId: Int, chapter: Int, verse: Int): String? =
         db.rawQuery(
             "SELECT text FROM TagAngBiblia_verses WHERE book_id = ? AND chapter = ? AND verse = ? LIMIT 1",

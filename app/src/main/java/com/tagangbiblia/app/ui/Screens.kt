@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.BottomAppBar
@@ -56,6 +57,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -70,6 +73,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -88,6 +97,8 @@ import com.tagangbiblia.app.BibleViewModel
 import com.tagangbiblia.app.Screen
 import com.tagangbiblia.app.ThemeMode
 import com.tagangbiblia.app.data.Verse
+import com.tagangbiblia.app.data.fold
+import com.tagangbiblia.app.data.searchTerms
 import kotlin.math.roundToInt
 
 private val Scripture = FontFamily.Serif
@@ -118,6 +129,7 @@ fun BibleApp(vm: BibleViewModel) {
                     Screen.Books -> BooksScreen(vm)
                     Screen.Chapters -> ChaptersScreen(vm)
                     Screen.Bookmarks -> BookmarksScreen(vm)
+                    Screen.Search -> SearchScreen(vm)
                 }
             }
         }
@@ -197,6 +209,9 @@ fun ReaderScreen(vm: BibleViewModel) {
                         }
                     },
                     actions = {
+                        IconButton(onClick = { vm.screen = Screen.Search }) {
+                            Icon(Icons.Filled.Search, contentDescription = "Search")
+                        }
                         IconButton(onClick = { vm.screen = Screen.Bookmarks }) {
                             Icon(Icons.Filled.Bookmarks, contentDescription = "Bookmarks")
                         }
@@ -266,15 +281,15 @@ fun ReaderScreen(vm: BibleViewModel) {
                     onClick = { vm.toggleSelect(verse.number) }
                 )
             }
-            item(key = "footer") {
-                Text(
-                    "Ang Biblia · Philippine Bible Society (1905) · Public Domain",
-                    Modifier.fillMaxWidth().padding(top = 24.dp),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+//            item(key = "footer") {
+//                Text(
+//                    "Ang Biblia · Philippine Bible Society (1905)",
+//                    Modifier.fillMaxWidth().padding(top = 24.dp),
+//                    textAlign = TextAlign.Center,
+//                    style = MaterialTheme.typography.labelSmall,
+//                    color = MaterialTheme.colorScheme.onSurfaceVariant
+//                )
+//            }
         }
     }
 
@@ -534,5 +549,140 @@ fun BookmarksScreen(vm: BibleViewModel) {
                 }
             }
         }
+    }
+}
+
+
+// ─────────────────────────────── search ───────────────────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchScreen(vm: BibleViewModel) {
+    val focus = LocalFocusManager.current
+    val requester = remember { FocusRequester() }
+    LaunchedEffect(Unit) { if (vm.searchQuery.isEmpty()) requester.requestFocus() }
+
+    val query = vm.searchQuery
+    val ref = remember(query, vm.books) { vm.referenceMatch(query) }
+    val terms = remember(query) { searchTerms(query) }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { focus.clearFocus(); vm.screen = Screen.Reader }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                title = {
+                    TextField(
+                        value = query,
+                        onValueChange = vm::updateSearch,
+                        singleLine = true,
+                        placeholder = { Text("Search words or “Genesis 1:1”") },
+                        trailingIcon = {
+                            if (query.isNotEmpty()) {
+                                IconButton(onClick = { vm.updateSearch("") }) {
+                                    Icon(Icons.Filled.Close, contentDescription = "Clear")
+                                }
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { focus.clearFocus() }),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                        modifier = Modifier.fillMaxWidth().focusRequester(requester)
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            )
+        }
+    ) { padding ->
+        LazyColumn(Modifier.fillMaxSize(), contentPadding = padding) {
+            if (ref != null) {
+                val (book, ch, vs) = ref
+                item(key = "goto") {
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                "Go to ${book.displayName} $ch" + (vs?.let { ":$it" } ?: ""),
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        modifier = Modifier.clickable {
+                            focus.clearFocus()
+                            vm.openChapter(book.id, ch, vs)
+                        }
+                    )
+                }
+            }
+            item(key = "status") {
+                val msg = when {
+                    query.trim().length < 2 -> "Type at least 2 letters. Case and accents are ignored."
+                    vm.searching -> "Searching…"
+                    vm.searchTotal == 0 -> "No verses found."
+                    vm.searchTotal > vm.searchResults.size ->
+                        "${vm.searchTotal} verses found — showing the first ${vm.searchResults.size}. Add more words to narrow down."
+                    else -> "${vm.searchTotal} ${if (vm.searchTotal == 1) "verse" else "verses"} found"
+                }
+                Text(
+                    msg,
+                    Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            items(vm.searchResults, key = { "${it.bookId}:${it.chapter}:${it.verse}" }) { hit ->
+                ListItem(
+                    headlineContent = {
+                        Text(
+                            "${vm.bookName(hit.bookId)} ${hit.chapter}:${hit.verse}",
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            highlight(hit.text, terms, MaterialTheme.colorScheme.primaryContainer),
+                            fontFamily = Scripture,
+                            maxLines = 4, overflow = TextOverflow.Ellipsis
+                        )
+                    },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    modifier = Modifier.clickable {
+                        focus.clearFocus()
+                        vm.openChapter(hit.bookId, hit.chapter, hit.verse)
+                    }
+                )
+            }
+        }
+    }
+}
+
+/** Bolds and tints every occurrence of any search term (accent/case-insensitive). */
+private fun highlight(text: String, terms: List<String>, bg: Color) = buildAnnotatedString {
+    val f = fold(text) // same length as text
+    val marked = BooleanArray(text.length)
+    for (t in terms) {
+        var i = f.indexOf(t)
+        while (i >= 0) {
+            for (k in i until i + t.length) marked[k] = true
+            i = f.indexOf(t, i + 1)
+        }
+    }
+    var i = 0
+    while (i < text.length) {
+        var j = i
+        while (j < text.length && marked[j] == marked[i]) j++
+        if (marked[i]) withStyle(SpanStyle(fontWeight = FontWeight.Bold, background = bg)) { append(text.substring(i, j)) }
+        else append(text.substring(i, j))
+        i = j
     }
 }

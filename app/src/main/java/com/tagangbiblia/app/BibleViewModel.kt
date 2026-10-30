@@ -12,12 +12,17 @@ import com.tagangbiblia.app.data.BibleRepository
 import com.tagangbiblia.app.data.Book
 import com.tagangbiblia.app.data.Bookmark
 import com.tagangbiblia.app.data.UserStore
+import com.tagangbiblia.app.data.SearchHit
+import com.tagangbiblia.app.data.SearchIndex
 import com.tagangbiblia.app.data.Verse
+import com.tagangbiblia.app.data.fold
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class Screen { Reader, Books, Chapters, Bookmarks }
+enum class Screen { Reader, Books, Chapters, Bookmarks, Search }
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 class BibleViewModel(app: Application) : AndroidViewModel(app) {
@@ -170,6 +175,50 @@ class BibleViewModel(app: Application) : AndroidViewModel(app) {
         return parts.joinToString(",")
     }
 
+    // ---------- search ----------
+    var searchQuery by mutableStateOf(""); private set
+    var searchResults by mutableStateOf<List<SearchHit>>(emptyList()); private set
+    var searchTotal by mutableIntStateOf(0); private set
+    var searching by mutableStateOf(false); private set
+    private var searchIndex: SearchIndex? = null
+    private var searchJob: Job? = null
+
+    fun updateSearch(q: String) {
+        searchQuery = q
+        searchJob?.cancel()
+        if (q.trim().length < 2) {
+            searchResults = emptyList(); searchTotal = 0; searching = false
+            return
+        }
+        searching = true
+        searchJob = viewModelScope.launch {
+            delay(200) // debounce typing
+            val r = repo ?: return@launch
+            val (hits, total) = withContext(Dispatchers.IO) {
+                val idx = searchIndex ?: SearchIndex(r.allVerses()).also { searchIndex = it }
+                idx.search(q, MAX_RESULTS)
+            }
+            searchResults = hits
+            searchTotal = total
+            searching = false
+        }
+    }
+
+    /** "Genesis 1", "gen 1:5", "1 samuel 3:10" -> (book, chapter, verse?) */
+    fun referenceMatch(q: String): Triple<Book, Int, Int?>? {
+        val m = Regex("^(.+?)\\s+(\\d+)(?:\\s*:\\s*(\\d+))?$").find(q.trim()) ?: return null
+        val name = fold(m.groupValues[1]).replace(Regex("\\s+"), " ")
+        val ch = m.groupValues[2].toIntOrNull() ?: return null
+        val vs = m.groupValues[3].toIntOrNull()
+        val candidates = books.filter {
+            fold(it.displayName).startsWith(name) || fold(it.name).startsWith(name)
+        }
+        val book = candidates.firstOrNull { fold(it.displayName) == name } ?: candidates.firstOrNull()
+            ?: return null
+        if (ch !in 1..(chapterCounts[book.id] ?: 0)) return null
+        return Triple(book, ch, vs)
+    }
+
     // ---------- bookmarks ----------
     fun isBookmarked(verse: Int) =
         bookmarks.any { it.bookId == bookId && it.chapter == chapter && it.verse == verse }
@@ -221,5 +270,6 @@ class BibleViewModel(app: Application) : AndroidViewModel(app) {
     companion object {
         const val MIN_FONT = 14f
         const val MAX_FONT = 40f
+        const val MAX_RESULTS = 300
     }
 }
