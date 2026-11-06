@@ -2,6 +2,7 @@ package com.tagangbiblia.app.data
 
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import com.tagangbiblia.app.BuildConfig
 import java.io.File
 import java.io.FileOutputStream
 
@@ -30,13 +31,13 @@ class BibleRepository(context: Context) {
         // The source DB has no lookup index; add one so chapter loads are instant.
         db.execSQL(
             "CREATE INDEX IF NOT EXISTS idx_verses_lookup " +
-                "ON TagAngBiblia_verses(book_id, chapter, verse)"
+                "ON ${P}_verses(book_id, chapter, verse)"
         )
     }
 
     fun books(): List<Book> {
         val out = ArrayList<Book>()
-        db.rawQuery("SELECT id, name FROM TagAngBiblia_books ORDER BY id", null).use { c ->
+        db.rawQuery("SELECT id, name FROM ${P}_books ORDER BY id", null).use { c ->
             while (c.moveToNext()) out += Book(c.getInt(0), c.getString(1))
         }
         return out
@@ -46,7 +47,7 @@ class BibleRepository(context: Context) {
     fun chapterCounts(): Map<Int, Int> {
         val out = HashMap<Int, Int>()
         db.rawQuery(
-            "SELECT book_id, MAX(chapter) FROM TagAngBiblia_verses GROUP BY book_id", null
+            "SELECT book_id, MAX(chapter) FROM ${P}_verses GROUP BY book_id", null
         ).use { c ->
             while (c.moveToNext()) out[c.getInt(0)] = c.getInt(1)
         }
@@ -56,7 +57,7 @@ class BibleRepository(context: Context) {
     fun verses(bookId: Int, chapter: Int): List<Verse> {
         val out = ArrayList<Verse>()
         db.rawQuery(
-            "SELECT verse, text FROM TagAngBiblia_verses " +
+            "SELECT verse, text FROM ${P}_verses " +
                 "WHERE book_id = ? AND chapter = ? ORDER BY verse",
             arrayOf(bookId.toString(), chapter.toString())
         ).use { c ->
@@ -68,7 +69,7 @@ class BibleRepository(context: Context) {
     fun allVerses(): List<SearchHit> {
         val out = ArrayList<SearchHit>(24000)
         db.rawQuery(
-            "SELECT book_id, chapter, verse, text FROM TagAngBiblia_verses " +
+            "SELECT book_id, chapter, verse, text FROM ${P}_verses " +
                 "ORDER BY book_id, chapter, verse", null
         ).use { c ->
             while (c.moveToNext()) out += SearchHit(c.getInt(0), c.getInt(1), c.getInt(2), c.getString(3).trim())
@@ -78,12 +79,14 @@ class BibleRepository(context: Context) {
 
     fun verseText(bookId: Int, chapter: Int, verse: Int): String? =
         db.rawQuery(
-            "SELECT text FROM TagAngBiblia_verses WHERE book_id = ? AND chapter = ? AND verse = ? LIMIT 1",
+            "SELECT text FROM ${P}_verses WHERE book_id = ? AND chapter = ? AND verse = ? LIMIT 1",
             arrayOf(bookId.toString(), chapter.toString(), verse.toString())
         ).use { c -> if (c.moveToFirst()) c.getString(0).trim() else null }
 
     companion object {
-        const val DB_NAME = "TagAngBiblia.db"
+        val DB_NAME: String = BuildConfig.DB_ASSET
+        /** Table-name prefix of the bundled database (e.g. "ASV" -> ASV_books / ASV_verses). */
+        private val P: String = BuildConfig.TABLE_PREFIX
         /** Bump when the bundled asset changes. */
         const val DB_VERSION = 1
     }

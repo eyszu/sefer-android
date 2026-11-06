@@ -93,7 +93,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.tagangbiblia.app.BibleViewModel
+import com.tagangbiblia.app.R
 import com.tagangbiblia.app.Screen
 import com.tagangbiblia.app.ThemeMode
 import com.tagangbiblia.app.data.Verse
@@ -281,15 +283,15 @@ fun ReaderScreen(vm: BibleViewModel) {
                     onClick = { vm.toggleSelect(verse.number) }
                 )
             }
-//            item(key = "footer") {
-//                Text(
-//                    "Ang Biblia · Philippine Bible Society (1905)",
-//                    Modifier.fillMaxWidth().padding(top = 24.dp),
-//                    textAlign = TextAlign.Center,
-//                    style = MaterialTheme.typography.labelSmall,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant
-//                )
-//            }
+            item(key = "footer") {
+                Text(
+                    stringResource(R.string.credit_line),
+                    Modifier.fillMaxWidth().padding(top = 24.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 
@@ -374,7 +376,7 @@ private fun SettingsSheet(vm: BibleViewModel, onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             ) {
                 Text(
-                    "Nang pasimula ay nilikha ng Dios ang langit at ang lupa.",
+                    stringResource(R.string.preview_verse),
                     Modifier.padding(16.dp),
                     fontFamily = Scripture,
                     fontSize = vm.fontSize.sp,

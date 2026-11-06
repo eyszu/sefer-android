@@ -1,23 +1,27 @@
-# Ang Biblia (Tagalog, 1905) – Ang Biblia with Original Name of God in Android app
+# Ang Biblia / The Sefer – Android Bible apps
 
-Kotlin + Jetpack Compose (Material 3). minSdk 26, targetSdk 35.
+One codebase, two editions (Gradle product flavors). Kotlin + Jetpack Compose (Material 3). minSdk 26, targetSdk 35.
 
-## Installation
-1. Download the codes and copy the AngBiblia.apk to your phone.
-2. Install AngBiblia.apk in your android phone. (have to bypass the safe install from source)
+| Flavor      | App name   | Text                                   | applicationId                |
+|-------------|------------|----------------------------------------|------------------------------|
+| `angbiblia` | Ang Biblia | Tagalog Ang Biblia (1905)              | `com.tagangbiblia.app`       |
+| `sefer`     | The Sefer  | American Standard Version (1901)       | `com.tagangbiblia.sefer`     |
+
+They install side by side and keep separate bookmarks and settings.
 
 ## Build
-1. Open this folder in Android Studio (Ladybug 2024.2 or newer) and let it sync.
-2. Run on a device/emulator, or Build > Build APK(s).
-   Command line: `gradle assembleDebug` (needs JDK 17+ and the Android SDK).
+Open this folder in Android Studio (Ladybug 2024.2+), let it sync, then pick a variant in
+Build > Select Build Variant (`angbiblia…` or `sefer…`) and Run / Build APK(s).
+Command line (JDK 17+, Android SDK): `gradle assembleSeferDebug`, `gradle assembleAngbibliaDebug`.
 
 ## Features
-- Browse books and chapters; prev/next chapter bar; last position is remembered
-- Text size slider (14–40 sp) with live preview
-- Light / Dark / System theme
+- Browse books and chapters; prev/next chapter bar; last position remembered
+- Text size slider (14-40 sp) with live preview; Light / Dark / System theme
 - Tap verses to select, then copy, bookmark or share
-- Bookmarks list (tap to jump to the verse, trash icon to remove)
+- Search: words (case/accent-insensitive, highlighted) or a reference like "Genesis 1:1"
+- Bookmarks list (tap to jump to the verse)
 
-The Bible database is bundled at app/src/main/assets/TagAngBiblia.db (vacuumed copy of
-TagAngBiblia_YHWH.db: same data, 42 MB -> 4 MB). Bookmarks are stored separately in user.db.
-If you replace the asset, bump DB_VERSION in BibleRepository.kt.
+## Databases
+Bundled in `app/src/<flavor>/assets/`. Sefer.db is the ASV file you supplied, cleaned: the original contained every
+verse twice (a typo-ridden copy and a corrected copy); only the corrected copy is kept (23,145 verses), then vacuumed.
+If you replace an asset, bump DB_VERSION in BibleRepository.kt.

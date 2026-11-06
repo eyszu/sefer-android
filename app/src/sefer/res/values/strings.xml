@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">The Sefer</string>
+    <string name="credit_line">The Sefer · American Standard Version (1901) · Public Domain</string>
+    <string name="share_signature">— The Sefer (ASV 1901)</string>
+    <string name="preview_verse">In the beginning God created the heavens and the earth.</string>
+</resources>

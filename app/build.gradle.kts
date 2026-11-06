@@ -9,7 +9,6 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.tagangbiblia.app"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -21,6 +20,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
     compileOptions {
@@ -28,7 +28,28 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+
+    // Two editions built from the same code. Each has its own database asset
+    // (src/<flavor>/assets), strings and launcher icon, and installs side by side.
+    flavorDimensions += "edition"
+    productFlavors {
+        create("angbiblia") {          // Tagalog Ang Biblia (1905) - keeps the original app id
+            dimension = "edition"
+            applicationId = "com.tagangbiblia.app"
+            buildConfigField("String", "DB_ASSET", "\"TagAngBiblia.db\"")
+            buildConfigField("String", "TABLE_PREFIX", "\"TagAngBiblia\"")
+        }
+        create("sefer") {              // The Sefer - American Standard Version (1901)
+            dimension = "edition"
+            applicationId = "com.tagangbiblia.sefer"
+            buildConfigField("String", "DB_ASSET", "\"Sefer.db\"")
+            buildConfigField("String", "TABLE_PREFIX", "\"ASV\"")
+        }
+    }
     // Keep the bundled Bible database uncompressed-friendly and untouched
     androidResources { noCompress += "db" }
 }

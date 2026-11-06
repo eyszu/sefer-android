@@ -161,7 +161,7 @@ class BibleViewModel(app: Application) : AndroidViewModel(app) {
         val ref = "$name $chapter:${compactRanges(sel.map { it.number })}"
         val body = if (sel.size == 1) "“${sel[0].text}”"
         else sel.joinToString("\n") { "${it.number} ${it.text}" }
-        return "$ref\n$body\n— Ang Biblia (1905)"
+        return "$ref\n$body\n${getApplication<Application>().getString(R.string.share_signature)}"
     }
 
     private fun compactRanges(nums: List<Int>): String {
