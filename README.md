@@ -25,3 +25,10 @@ Command line (JDK 17+, Android SDK): `gradle assembleSeferDebug`, `gradle assemb
 Bundled in `app/src/<flavor>/assets/`. Sefer.db is the ASV file you supplied, cleaned: the original contained every
 verse twice (a typo-ridden copy and a corrected copy); only the corrected copy is kept (23,145 verses), then vacuumed.
 If you replace an asset, bump DB_VERSION in BibleRepository.kt.
+
+## Pre build for android installation
+- You may install in your android phone the pre build.
+- download the codes (zip)
+- copy the files to your phone:
+    - TheSefer.apk
+    - AngBiblia.apk
