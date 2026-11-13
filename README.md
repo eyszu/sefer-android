@@ -21,7 +21,7 @@ Open this folder in Android Studio (Ladybug or newer) and run the `app` configur
 Requires JDK 17, compileSdk 35, minSdk 26 (Android 8.0).
 
 ## Pre-build ready to install
-- copy and install to android phone the file: sefer-v0.2.apk
+- copy and install to android phone the file: sefer-v0.3.apk
 
 ## Data notes
 - Both supplied databases contain the **Old Testament only** (39 books, 23,145 verses). The app builds its book list from the data, and all 66 book names (English + Tagalog) are already in `BookNames.kt`, so dropping in New Testament data needs no code changes.
