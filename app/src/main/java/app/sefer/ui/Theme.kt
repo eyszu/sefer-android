@@ -55,8 +55,9 @@ enum class SeferPalette(
     }
 }
 
-/** The six reading fonts, bundled in res/font. Literata is the default. */
+/** The device's own font (default) plus six bundled reading fonts (res/font). */
 enum class SeferFont(val key: String, val label: String, val family: FontFamily) {
+    SYSTEM("system", "System default", FontFamily.Default),
     LITERATA(
         "literata", "Literata",
         FontFamily(
@@ -101,7 +102,7 @@ enum class SeferFont(val key: String, val label: String, val family: FontFamily)
     );
 
     companion object {
-        fun fromKey(key: String?): SeferFont = entries.firstOrNull { it.key == key } ?: LITERATA
+        fun fromKey(key: String?): SeferFont = entries.firstOrNull { it.key == key } ?: SYSTEM
     }
 }
 

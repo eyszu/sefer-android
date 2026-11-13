@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -143,7 +144,7 @@ fun AppearanceSheet(vm: SeferViewModel) {
                                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                             ),
                         )
-                        if (f == SeferFont.LITERATA) {
+                        if (f == SeferFont.SYSTEM) {
                             Text("Default", color = palette.muted, fontSize = 12.sp, modifier = Modifier.padding(end = 8.dp))
                         }
                         if (selected) SeferIcon(R.drawable.ic_check, "Selected", palette.accent, size = 20.dp)
@@ -175,6 +176,31 @@ fun AppearanceSheet(vm: SeferViewModel) {
                 Text("A", color = palette.muted, fontSize = 26.sp, fontWeight = FontWeight.Bold)
             }
 
+            // ---- Line spacing ----
+            SectionLabel("Line spacing  ·  %.2f".format(vm.lineSpacing / 100f), palette)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.width(14.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    repeat(3) { Box(Modifier.fillMaxWidth().height(2.dp).background(palette.muted)) }
+                }
+                Slider(
+                    value = vm.lineSpacing.toFloat(),
+                    onValueChange = { vm.selectLineSpacing(it.roundToInt()) },
+                    valueRange = SeferViewModel.MIN_LINE_SPACING.toFloat()..SeferViewModel.MAX_LINE_SPACING.toFloat(),
+                    steps = (SeferViewModel.MAX_LINE_SPACING - SeferViewModel.MIN_LINE_SPACING) / 5 - 1,
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = palette.accent,
+                        activeTrackColor = palette.accent,
+                        inactiveTrackColor = palette.container,
+                        activeTickColor = palette.accent,
+                        inactiveTickColor = palette.outline,
+                    ),
+                )
+                Column(Modifier.width(26.dp), verticalArrangement = Arrangement.spacedBy(9.dp)) {
+                    repeat(3) { Box(Modifier.fillMaxWidth().height(2.dp).background(palette.muted)) }
+                }
+            }
+
             // ---- Live preview ----
             Spacer(Modifier.height(12.dp))
             Box(
@@ -194,7 +220,7 @@ fun AppearanceSheet(vm: SeferViewModel) {
                     style = TextStyle(
                         fontFamily = vm.font.family,
                         fontSize = vm.fontSize.sp,
-                        lineHeight = (vm.fontSize * 1.65f).sp,
+                        lineHeight = (vm.fontSize * vm.lineSpacing / 100f).sp,
                         color = palette.text,
                     ),
                 )

@@ -77,7 +77,7 @@ fun ReaderScreen(vm: SeferViewModel) {
     val verseStyle = TextStyle(
         fontFamily = vm.font.family,
         fontSize = vm.fontSize.sp,
-        lineHeight = (vm.fontSize * 1.65f).sp,
+        lineHeight = (vm.fontSize * vm.lineSpacing / 100f).sp,
         color = palette.text,
     )
 

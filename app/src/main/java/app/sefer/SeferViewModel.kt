@@ -51,6 +51,9 @@ class SeferViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var fontSize by mutableIntStateOf(prefs.getInt("font_size", DEFAULT_FONT_SIZE))
         private set
+    /** Line height as a percentage of the font size (165 = 1.65x). */
+    var lineSpacing by mutableIntStateOf(prefs.getInt("line_spacing", DEFAULT_LINE_SPACING))
+        private set
     var version by mutableStateOf(BibleVersion.fromKey(prefs.getString("version", null)))
         private set
 
@@ -59,6 +62,11 @@ class SeferViewModel(app: Application) : AndroidViewModel(app) {
     fun selectFontSize(size: Int) {
         fontSize = size.coerceIn(MIN_FONT_SIZE, MAX_FONT_SIZE)
         prefs.edit().putInt("font_size", fontSize).apply()
+    }
+
+    fun selectLineSpacing(percent: Int) {
+        lineSpacing = (percent / 5 * 5).coerceIn(MIN_LINE_SPACING, MAX_LINE_SPACING)
+        prefs.edit().putInt("line_spacing", lineSpacing).apply()
     }
 
     fun selectVersion(v: BibleVersion) {
@@ -210,6 +218,9 @@ class SeferViewModel(app: Application) : AndroidViewModel(app) {
         const val MIN_FONT_SIZE = 12
         const val MAX_FONT_SIZE = 32
         const val DEFAULT_FONT_SIZE = 18
+        const val MIN_LINE_SPACING = 120
+        const val MAX_LINE_SPACING = 220
+        const val DEFAULT_LINE_SPACING = 165
         const val MIN_QUERY_LENGTH = 2
         const val MAX_RESULTS = 500
     }
